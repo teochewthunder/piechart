@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Pie Chart</title>
+
+		<style>
+			#pie_container, #pie_container div {outline: 0px solid #FFAA00;}
+
+			#graph_container
+			{
+				height: 400px;
+				width: 400px;
+				margin: 0 auto 0 auto;
+			}		
+
+			#pie_container
+			{
+				height: 100%;
+				width: 100%;
+				border-radius: 50%;
+				float: left;
+				overflow: hidden;
+			}			
+
+			.quad_wrapper
+			{
+				width: 50%;
+				height: 100%;
+				float: left;
+				overflow: hidden;
+			}
+
+			.pie_quad
+			{
+				width: 100%;
+				height: 50%;
+				margin-bottom: -100%;
+				transform-origin: 0% 100%;
+				position: relative;
+			}
+
+			#quad_wrapper_left .pie_quad
+			{
+				margin-left: 100%;
+			}
+
+			#label_wrapper
+			{
+				height: 100%;
+				width: 100%;
+				margin-right: -100%;
+				float: left;
+				position: relative;
+				z-index: 2000;
+			}
+
+			#label_quad_wrapper
+			{
+				height: 50%;
+				width: 50%;
+				margin-left: 50%;
+				
+			}
+
+			.label_quad
+			{
+				width: 100%;
+				height: 100%;
+				margin-bottom: -100%;
+				transform-origin: 0% 100%;
+				position: relative;
+			}
+
+			.data_label
+			{
+				color: #000000;
+				font-weight: bold;
+				font-family: verdana;
+				font-size: 0.8em;
+				position: relative;
+				display: inline-block;
+				transform-origin: 50% 50%;
+			}
+
+			#legend_container
+			{
+				color: #FFFFFF;
+				font-weight: bold;
+				font-family: verdana;
+				font-size: 1em;
+				width: 50%;
+				margin: 5% auto 0 auto;
+				padding: 0.5em;
+			}
+
+			.legend_row
+			{
+				width: 100%;
+				height: 1.5em;
+			}
+
+			#legend_row: after
+			{
+				display: block;
+				content: "";
+				clear: both;
+			}
+
+			.legend_color
+			{
+				width: 1em;
+				height: 1em;
+				float: left;
+			}
+
+			.legend_label
+			{
+				height: 1em;
+				float: left;
+				color: #000000;
+				font-weight: bold;
+				font-family: verdana;
+				font-size: 1em;
+				margin-left: 1em;
+			}
+		</style>
+
+		<script>
+			var graphdata = 
+			{
+				"cols": 
+				[
+					{
+						"title": "Fernando Torres",
+						"color": "#FF00FF",
+						"stats": 
+						[
+							{"year": 2007, "goals": 24, "appearances": 33},
+							{"year": 2008, "goals": 14, "appearances": 24},
+							{"year": 2009, "goals": 18, "appearances": 22},
+							{"year": 2010, "goals": 9, "appearances": 23},
+						]
+					},
+					{
+						"title": "Steven Gerrard",
+						"color": "#440000",
+						"stats": 
+						[
+							{"year": 2007, "goals": 11, "appearances": 36},
+							{"year": 2008, "goals": 16, "appearances": 34},
+							{"year": 2009, "goals": 9, "appearances": 31},
+							{"year": 2010, "goals": 4, "appearances": 33},
+						]
+					},
+					{
+						"title": "Dirk Kuyt",
+						"color": "#FFFF00",
+						"stats": 
+						[
+							{"year": 2007, "goals": 3, "appearances": 34},
+							{"year": 2008, "goals": 12, "appearances": 32},
+							{"year": 2009, "goals": 9, "appearances": 38},
+							{"year": 2010, "goals": 13, "appearances": 37},
+						]
+					},
+					{
+						"title": "Ryan Babel",
+						"color": "#00AA00",
+						"stats": 
+						[
+							{"year": 2007, "goals": 4, "appearances": 30},
+							{"year": 2008, "goals": 3, "appearances": 27},
+							{"year": 2009, "goals": 4, "appearances": 25},
+							{"year": 2010, "goals": 1, "appearances": 1},
+						]
+					},
+					{
+						"title": "Yossi Benayoun",
+						"color": "#000044",
+						"stats": 
+						[
+							{"year": 2007, "goals": 4, "appearances": 30},
+							{"year": 2008, "goals": 8, "appearances": 32},
+							{"year": 2009, "goals": 6, "appearances": 30},
+						]
+					},
+					{
+						"title": "David N'gog",
+						"color": "#006699",
+						"stats": 
+						[
+							{"year": 2008, "goals": 2, "appearances": 14},
+							{"year": 2009, "goals": 5, "appearances": 24},
+							{"year": 2010, "goals": 2, "appearances": 25},
+						]
+					},
+				],
+				"rows": [2007, 2008, 2009, 2010],
+				"stats": ["goals", "appearances"]
+			}; 
+
+			function populate()
+			{
+				var ddl, option;
+
+				ddl = document.getElementById("ddlRow");
+
+				for (var i = 0; i < graphdata.rows.length; i++)
+				{
+					option = document.createElement("option");
+					option.text = graphdata.rows[i] + " - " + (parseInt(graphdata.rows[i]) + 1);
+					option.value = graphdata.rows[i];
+					ddl.add(option);
+				}
+
+				ddl = document.getElementById("ddlStat");
+
+				for (var i = 0 ; i < graphdata.stats.length; i++)
+				{
+					option = document.createElement("option");
+					option.text = graphdata.stats[i];
+					option.value = graphdata.stats[i];
+					ddl.add(option);
+				}
+
+				displayLegend();
+				displayData();
+			}
+
+			function displayData()
+			{
+				var stat = document.getElementById("ddlStat").value;
+				var row = document.getElementById("ddlRow").value;
+
+				var nonzero = getNonZero(row, stat);
+				var sorted = getSorted(nonzero);
+				var pieces = getPieces(sorted);
+				var lastPieceAngle = {"prevangle": 0, "newangle": 0};
+
+				var quads=[];
+				var lastQuadAngle = {"prevangle":0,"newangle":0};
+
+				var quad_wrapper;
+				quad_wrapper = document.getElementById("quad_wrapper_right");
+				quad_wrapper.innerHTML = "";
+				quad_wrapper.style.backgroundColor = "";
+				quad_wrapper = document.getElementById("quad_wrapper_left");
+				quad_wrapper.innerHTML = "";
+
+				var label_quad_wrapper = document.getElementById("label_quad_wrapper");
+				label_quad_wrapper.innerHTML = "";
+
+				for (var i = 0; i < pieces.length; i++)
+				{
+					quads = getQuads(pieces[i]);
+
+					for (var j = 0; j < quads.length; j++)
+					{
+						lastQuadAngle = placeQuad((1000 - (i * 10)) - j, quads[j], lastQuadAngle);
+					}
+
+					lastPieceAngle = placeLabel(pieces[i], lastPieceAngle);
+				}
+			}
+
+			function placeLabel(piece, angle)
+			{
+				var newangle, midangle;
+				var label_quad = document.createElement("div");
+				label_quad.className = "label_quad";
+
+				newangle = angle.newangle + parseInt(piece.piece);
+				midangle = ((parseInt(piece.piece)) / 2) + angle.newangle;
+
+				label_quad.style.transform = "rotate(" + midangle + "deg)";
+
+				var label_quad_wrapper = document.getElementById("label_quad_wrapper");
+				label_quad_wrapper.append(label_quad);
+
+				var label = document.createElement("span");
+				label.className = "data_label";
+				label.innerHTML = piece.stats;
+				label.style.transform = "rotate(" + (midangle * -1) + "deg)";
+				label_quad.append(label);
+
+				return {"prevangle": angle.newangle, "newangle": newangle};
+			}
+
+			function placeQuad(zindex, quad, angle)
+			{
+				var newangle;
+				var pie_quad = document.createElement("div");
+				pie_quad.className = "pie_quad";
+				pie_quad.style.backgroundColor = quad.color;
+				pie_quad.style.zIndex = zindex;
+
+				newangle = angle.newangle + parseInt(quad.piece);
+				pie_quad.style.transform = "rotate(" + (newangle - 90) + "deg)";
+
+				var quad_wrapper;
+
+				if (angle.newangle >= 180)
+				{
+					quad_wrapper = document.getElementById("quad_wrapper_left");
+					quad_wrapper.append(pie_quad);
+				}
+				else
+				{
+					quad_wrapper = document.getElementById("quad_wrapper_right");
+					quad_wrapper.append(pie_quad);
+
+					if (newangle >= 180)
+					{
+						var pie_quad_copy = document.createElement("div");
+						pie_quad_copy.className = "pie_quad";
+						pie_quad_copy.style.backgroundColor = quad.color;
+						pie_quad_copy.style.zIndex = zindex;
+
+						pie_quad_copy.style.transform = "rotate(" + (newangle - 90) + "deg)";
+
+						quad_wrapper = document.getElementById("quad_wrapper_left");
+						quad_wrapper.append(pie_quad_copy);
+					}
+				}
+
+				return {"prevangle": angle.newangle, "newangle": newangle};
+			}
+
+			function getQuads(piece)
+			{
+				var quads = [];
+				var rem = piece.piece;
+
+				while (rem>0)
+				{					
+					if (rem <= 90)
+					{
+						quads.push
+						(
+							{
+								"color":piece.color,
+								"piece":rem
+							}
+						);
+					}
+					else
+					{
+						quads.push
+						(
+							{
+								"color":piece.color,
+								"piece":90
+							}
+						);
+					}
+
+					rem = rem - 90;
+				}
+
+				return quads; 
+			}
+
+			function getNonZero(row, stat)
+			{
+				var nonzero = [];
+				var temp;
+				var player;
+
+				for (var i = 0; i < graphdata.cols.length; i++)
+				{
+					temp = graphdata.cols[i].stats.filter(function (x) {return x.year == row;});
+
+					if (temp.length > 0)
+					{
+						if (temp[0][stat] > 0)
+						{
+							player = 
+							{
+								"title": graphdata.cols[i].title,
+								"color": graphdata.cols[i].color,
+								"stats": temp[0][stat]	
+							};
+
+							nonzero.push(player);
+						}	
+					}
+				}
+
+				return nonzero;
+			}
+
+			function getSorted(nonzero)
+			{
+				var sorted = [];
+				var temp = nonzero;
+
+				while (temp.length > 0)
+				{
+					if (temp.length == 1)
+					{
+						sorted.push(temp[0]);
+						temp.splice(0, 1);
+					}
+					else
+					{
+						for (var i = 0; i < temp.length; i++)
+						{	
+							if (getMaxStatistic(temp, i))
+							{
+								sorted.push(temp[i]);
+								temp.splice(i, 1);
+							}
+						}
+					}
+				}
+
+				return sorted;
+			}
+
+			function getPieces(sorted)
+			{
+				var total = 0;
+				var pieces = [];
+				var currentPiece;
+				var currentTotalPiece = 0;
+
+				for (var i = 0; i < sorted.length; i++)
+				{	
+					total += sorted[i].stats;
+				}
+
+				for (var i = sorted.length - 1; i >= 0; i--)
+				{	
+					if (i == 0)
+					{
+						currentPiece = 360 - currentTotalPiece;
+					}
+					else
+					{
+						currentPiece = ((sorted[i].stats / total) * 360).toFixed(0);
+						currentTotalPiece += parseInt(currentPiece);
+					}
+
+					pieces.push
+					(
+						{
+							"title": sorted[i].title,
+							"color": sorted[i].color,
+							"stats": sorted[i].stats,
+							"piece": currentPiece
+						}
+					);
+				}
+
+				return pieces;
+			}
+
+			function getMaxStatistic(haystack, needle)
+			{
+				for (var i = 0; i < haystack.length; i++)
+				{	
+					if (haystack[i].stats < haystack[needle].stats)
+					{
+						return false;
+					}
+				}
+
+				return true;
+			}
+
+			function displayLegend()
+			{
+				var legend = document.getElementById("legend_container");
+				legend.innerHTML = "";
+
+				var color, label;
+				var row;
+
+				for (var i = 0; i < graphdata.cols.length; i++)
+				{
+					color = document.createElement("div");
+					color.className = "legend_color";
+					color.style.backgroundColor = graphdata.cols[i].color;
+
+					label = document.createElement("div");
+					label.className = "legend_label";
+					label.innerHTML = graphdata.cols[i].title;
+
+					row = document.createElement("div");
+					row.className = "legend_row";
+
+					row.appendChild(color);
+					row.appendChild(label);
+					legend.appendChild(row);
+				}
+			}
+		</script>
+	</head>
+	
+	<body onload="populate();">
+		<div id="graph_container">
+			<div id="label_wrapper">
+				<div id="label_quad_wrapper">
+
+				</div>
+			</div>
+
+			<div id="pie_container">
+				<div id="quad_wrapper_left" class="quad_wrapper">
+
+				</div>
+
+				<div id="quad_wrapper_right" class="quad_wrapper">
+
+				</div>
+			</div>
+		</div>
+
+		<div id="legend_container">
+
+		</div>
+
+		<select id="ddlRow" onchange="displayData();">
+
+		</select>
+
+		<select id="ddlStat" onchange="displayData();">
+
+		</select>
+	</body>
+</html>
