@@ -275,13 +275,13 @@
 				label_quad.style.transform = "rotate(" + midangle + "deg)";
 
 				var label_quad_wrapper = document.getElementById("label_quad_wrapper");
-				label_quad_wrapper.append(label_quad);
+				label_quad_wrapper.appendChild(label_quad);
 
 				var label = document.createElement("span");
 				label.className = "data_label";
 				label.innerHTML = piece.stats;
 				label.style.transform = "rotate(" + (midangle * -1) + "deg)";
-				label_quad.append(label);
+				label_quad.appendChild(label);
 
 				return {"prevangle": angle.newangle, "newangle": newangle};
 			}
@@ -302,12 +302,12 @@
 				if (angle.newangle >= 180)
 				{
 					quad_wrapper = document.getElementById("quad_wrapper_left");
-					quad_wrapper.append(pie_quad);
+					quad_wrapper.appendChild(pie_quad);
 				}
 				else
 				{
 					quad_wrapper = document.getElementById("quad_wrapper_right");
-					quad_wrapper.append(pie_quad);
+					quad_wrapper.appendChild(pie_quad);
 
 					if (newangle >= 180)
 					{
@@ -319,7 +319,7 @@
 						pie_quad_copy.style.transform = "rotate(" + (newangle - 90) + "deg)";
 
 						quad_wrapper = document.getElementById("quad_wrapper_left");
-						quad_wrapper.append(pie_quad_copy);
+						quad_wrapper.appendChild(pie_quad_copy);
 					}
 				}
 
