@@ -1,12 +1,12 @@
 # Pie Chart
 
-The background is a circular div, with the *overflow* property set to *hidden*.
+The background is a circular div, with the `overflow` property set to `hidden`.
 
 ## Data
 - A JSON object is used to hold the data.
 - Functions are provided for calculating totals.
-- The *(data value / total) x 100* is the *percentage*.
-- This is applied to *percentage / 100 => (x / 360)*. Because the entire pie is 360 degrees, and we need to figure out how much of the pie each data value is going to take up.
+- The (`data value` / `total`) x 10 is the `percentage`.
+- This is applied to `percentage` / 100 => (`x` / 360). Because the entire pie is 360 degrees, and we need to figure out how much of the pie each data value is going to take up.
 
 ## CSS Representation
 - The circle is further divided into two vertical rectangular halves - left and right.
